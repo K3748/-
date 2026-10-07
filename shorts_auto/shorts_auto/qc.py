@@ -25,7 +25,10 @@ def inspect(path, cfg):
     for s, e in freezes:
         issues.append({"type": "freeze", "start": s, "end": e})
     integrated = float(lufs[-1]) if lufs else None
-    if integrated is not None and abs(integrated - cfg["target_lufs"]) > 1.5:
+    if integrated is not None and integrated <= -60:
+        # -70 LUFS = 측정 하한 = 완전 무음. 키워도 무음이므로 음량 문제가 아니라 '소리 없음'
+        issues.append({"type": "silent", "detail": "소리가 전혀 없음 (원본 영상 무음 + BGM 없음)"})
+    elif integrated is not None and abs(integrated - cfg["target_lufs"]) > 1.5:
         issues.append({"type": "loudness", "detail": f"{integrated:.1f} LUFS"})
     if peak and peak[-1] != "-inf" and float(peak[-1]) > -0.5:
         issues.append({"type": "clipping", "detail": f"peak {peak[-1]} dBFS"})

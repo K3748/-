@@ -177,7 +177,7 @@ class Project:
         for rnd in range(self.cfg["qc_max_rounds"] + 1):
             result = qc.inspect(final, self.cfg)
             self.qc_rounds.append(result)
-            if first_lufs is None:
+            if first_lufs is None and result["lufs"] is not None and result["lufs"] > -60:
                 first_lufs = result["lufs"]
             for it in result["issues"]:
                 self.log(f"  ! 문제 발견: {it}")
@@ -213,6 +213,12 @@ class Project:
             self.qc_rounds.append(result)
             self.change("전체", "음량", f"{before} LUFS", f"{result['lufs']} LUFS",
                         "목표와 1.5dB 이상 차이 → 게인 보정 + 리미터", "target_lufs")
+        if any(i["type"] == "silent" for i in result["issues"]):
+            self.change("전체", "소리 없음", "-", "무음 영상으로 저장",
+                        "원본 영상들에 소리가 없고 BGM 폴더도 비어 있습니다. "
+                        "BGM·효과음 폴더의 bgm 폴더에 음악 파일(mp3/wav)을 넣고 다시 실행하면 해결됩니다.")
+            self.log("  ※ 소리가 없습니다 → 'BGM·효과음 폴더/bgm'에 음악을 넣고 다시 실행하세요.")
+            result = dict(result, issues=[i for i in result["issues"] if i["type"] != "silent"])
         left = result["issues"]
         if not self.changes["qc"]:
             self.change("전체", "검사 결과", "-", "문제 없음", "검은 화면·멈춤·음량·피크·규격·길이 검사 통과")

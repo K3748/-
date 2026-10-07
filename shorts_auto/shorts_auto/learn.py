@@ -162,7 +162,8 @@ def learn_from_results(log=print, window=5, need=3):
     if head >= need:
         bump("max_head_trim", 0.3, head, "앞부분 멈춤/검은 화면을 검사 단계에서 추가로 잘라냄")
     errs = [h["first_lufs"] - h["target_lufs"] for h in hist
-            if h.get("first_lufs") is not None and h.get("target_lufs") is not None]
+            if h.get("first_lufs") is not None and h.get("target_lufs") is not None
+            and h["first_lufs"] > -60]          # 무음(-70) 기록은 음량 오차가 아니므로 제외
     if len(errs) >= need and abs(statistics.mean(errs)) > 0.7:
         err = statistics.mean(errs)
         r = rules["lufs_pre_offset"]
