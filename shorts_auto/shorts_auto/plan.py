@@ -77,6 +77,16 @@ def build_plan(analyses, captions, cfg):
                 s.reasons.append(f"반응 {a.reaction_time:.2f}s에 줌 펀치")
         segs.append(s)
 
+    # 훅: 첫 클립의 반응이 hook_sec 안에 나오도록 시작을 당긴다
+    if segs and segs[0].reaction_at is not None and segs[0].reaction_at > cfg["hook_sec"] - 0.5:
+        s = segs[0]
+        shift = (s.reaction_at - (cfg["hook_sec"] - 0.5)) * s.speed
+        s.src_start += shift
+        s.reaction_at -= shift / s.speed
+        if s.zoom_at is not None:
+            s.zoom_at = s.reaction_at
+        s.reasons.append(f"훅 규칙: 첫 반응을 {s.reaction_at:.2f}s로 앞당김 (기준 {cfg['hook_sec']}s)")
+
     # 클립 사이 전환: 움직임이 큰 쪽이 끼면 빠른 컷, 잔잔하면 디졸브
     for prev, cur in zip(segs, segs[1:]):
         if prev.motion_level > 4 and cur.motion_level > 4:

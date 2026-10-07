@@ -22,6 +22,9 @@ DEFAULTS = {
     "font": "auto",
     "font_size": 82,
     "caption_margin_v": 520,        # 쇼츠 UI에 가리지 않도록 하단 여백
+    "caption_margin_h": 140,        # 오른쪽 버튼 영역 회피
+    "hook_sec": 3.0,                # 첫 반응이 나와야 하는 시간
+    "lufs_pre_offset": 0.0,         # 1차 음량 보정치(학습)
     "bgm_volume": 0.35,
     "sfx_volume": 0.8,
     "target_lufs": -14.0,
@@ -29,8 +32,24 @@ DEFAULTS = {
 }
 
 
-def load_config(path: Path | None) -> dict:
+def base_config() -> dict:
+    """기본값 + 지식 베이스(학습 반영) 값."""
+    from . import knowledge
     cfg = dict(DEFAULTS)
+    cfg.update({k: v for k, v in knowledge.values().items() if k in cfg})
+    return cfg
+
+
+def user_overrides(path: Path | None) -> dict:
     if path and path.exists():
-        cfg.update(json.loads(path.read_text(encoding="utf-8")))
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except ValueError:
+            return {}
+    return {}
+
+
+def load_config(path: Path | None) -> dict:
+    cfg = base_config()
+    cfg.update(user_overrides(path))
     return cfg

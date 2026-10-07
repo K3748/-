@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "rules": {
+    "target_lufs": {
+      "title": "최종 음량 목표",
+      "value": -14.0, "min": -16.0, "max": -12.0, "max_step": 1.0, "unit": "LUFS",
+      "reason": "YouTube는 업로드 영상을 약 -14 LUFS로 맞춘다. 더 크게 만들면 깎이고, 작으면 올려주지 않아 작게 들린다.",
+      "sources": [
+        {"title": "Youlean - YouTube loudness", "url": "https://youlean.co/youtube-loudness-normalization/"},
+        {"title": "MeterPlugs - YouTube changes loudness reference to -14 LUFS", "url": "https://meterplugs.com/blog/2019/09/18/youtube-changes-loudness-reference-to-14-lufs.html"}
+      ]
+    },
+    "caption_margin_v": {
+      "title": "자막 하단 여백",
+      "value": 520, "min": 320, "max": 760, "max_step": 120, "unit": "px",
+      "reason": "쇼츠 하단 약 300px(설명 펼치면 약 400px)은 제목·채널명·설명이 덮는다. 그 위로 여유를 두고 자막을 배치한다.",
+      "sources": [
+        {"title": "ClipSpeed - YouTube Shorts size & safe zones", "url": "https://www.clipspeed.ai/blog/youtube-shorts-size.html"},
+        {"title": "BlitzCut - Best caption placement for short-form", "url": "https://blitzcutai.com/blog/best-caption-placement-short-form-video"},
+        {"title": "AdaptlyPost - Social media safe zones", "url": "https://adaptlypost.com/en/blog/social-media-safe-zones-2026-complete-guide"}
+      ]
+    },
+    "caption_margin_h": {
+      "title": "자막 좌우 여백",
+      "value": 140, "min": 96, "max": 240, "max_step": 40, "unit": "px",
+      "reason": "쇼츠 오른쪽 약 96px에는 좋아요·댓글·공유 버튼이 세로로 있다. 자막이 그 아래로 들어가지 않도록 여백을 둔다.",
+      "sources": [
+        {"title": "ClipSpeed - YouTube Shorts size & safe zones", "url": "https://www.clipspeed.ai/blog/youtube-shorts-size.html"},
+        {"title": "PostPlanify - Shorts safe zone checker", "url": "https://postplanify.com/tools/youtube-shorts-safe-zone-checker"}
+      ]
+    },
+    "max_total_sec": {
+      "title": "최대 영상 길이",
+      "value": 178.0, "min": 30.0, "max": 178.0, "max_step": 120.0, "unit": "초",
+      "reason": "2024-10-15부터 정사각형/세로 영상은 3분까지 쇼츠로 분류된다. 넘으면 일반 동영상이 되므로 약간 짧게 제한한다.",
+      "sources": [
+        {"title": "YouTube 고객센터 - 3분 쇼츠", "url": "https://support.google.com/youtube/answer/15424877"},
+        {"title": "Social Media Today - 3-minute Shorts for all", "url": "https://www.socialmediatoday.com/news/youtube-expands-3-minute-shorts-to-all-users/736967/"}
+      ]
+    },
+    "hook_sec": {
+      "title": "첫 반응까지 허용 시간(훅)",
+      "value": 3.0, "min": 1.5, "max": 5.0, "max_step": 1.0, "unit": "초",
+      "reason": "시청자 다수가 처음 3초 안에 이탈 여부를 결정한다. 첫 클립의 반응이 이 시간 안에 나오도록 앞을 당긴다.",
+      "sources": [
+        {"title": "OpusClip - Shorts hook formulas (3-second hold)", "url": "https://www.opus.pro/blog/youtube-shorts-hook-formulas"},
+        {"title": "Go-Viral - Hook in the first 3 seconds", "url": "https://www.go-viral.app/blog/hook-first-3-seconds/"}
+      ]
+    },
+    "max_tail_trim": {
+      "title": "끝부분 최대 자르기",
+      "value": 2.0, "min": 1.0, "max": 3.5, "max_step": 0.3, "unit": "초",
+      "reason": "AI 생성 영상은 끝에서 멈추거나 형체가 무너지는 경우가 많다. 내 영상 검사 결과에 따라 자동 조정된다.",
+      "sources": []
+    },
+    "max_head_trim": {
+      "title": "앞부분 최대 자르기",
+      "value": 1.5, "min": 0.5, "max": 3.0, "max_step": 0.3, "unit": "초",
+      "reason": "AI 영상 첫 부분의 정지·흐림 구간 제거 한도. 내 영상 검사 결과에 따라 자동 조정된다.",
+      "sources": []
+    },
+    "lufs_pre_offset": {
+      "title": "음량 1차 보정치",
+      "value": 0.0, "min": -4.0, "max": 4.0, "max_step": 1.5, "unit": "dB",
+      "reason": "짧은 영상은 1패스 음량 정규화가 목표보다 작게 나오는 경향이 있다. 검사 결과의 평균 오차만큼 미리 보정한다.",
+      "sources": []
+    }
+  }
+}

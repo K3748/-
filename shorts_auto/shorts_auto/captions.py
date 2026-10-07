@@ -81,7 +81,7 @@ def write_ass(events, cfg, out: Path):
         "Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, "
         "Alignment, MarginL, MarginR, MarginV, Encoding",
         f"Style: Main,{font},{fs},&H00FFFFFF,&H000000FF,&H00000000,&H64000000,-1,0,0,0,100,100,0,0,1,7,3,2,"
-        f"80,80,{cfg['caption_margin_v']},1",
+        f"{cfg['caption_margin_h']},{cfg['caption_margin_h']},{cfg['caption_margin_v']},1",
         "", "[Events]", "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
     ]
     for s, e, text in events:

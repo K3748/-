@@ -115,7 +115,7 @@ def finalize(joined: Path, segs, cfg, assets: Path, work: Path, out: Path, seed=
         graph.append(f"[{base + k}:a]aformat=channel_layouts=stereo,adelay={ms}|{ms},volume={cfg['sfx_volume']}[s{k}]")
         mix.append(f"[s{k}]")
     graph.append(f"{''.join(mix)}amix=inputs={len(mix)}:normalize=0:duration=first,"
-                 f"loudnorm=I={cfg['target_lufs']}:TP=-1.5:LRA=11,aresample=48000[aout]")
+                 f"loudnorm=I={cfg['target_lufs'] + cfg['lufs_pre_offset']:.1f}:TP=-1.5:LRA=11,aresample=48000[aout]")
     graph.append("[0:v]subtitles=subs.ass[vout]")
     run(["ffmpeg", "-y", "-v", "error", *inputs, "-filter_complex", ";".join(graph),
          "-map", "[vout]", "-map", "[aout]", *ENC, "-c:a", "aac", "-b:a", "192k",

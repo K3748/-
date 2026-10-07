@@ -5,3 +5,4 @@ input/*
 __pycache__/
 assets/sfx/_generated/
 config.json
+data/

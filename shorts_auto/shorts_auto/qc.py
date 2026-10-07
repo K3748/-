@@ -18,7 +18,7 @@ def inspect(path, cfg):
     issues = []
     if (info["width"], info["height"]) != (cfg["width"], cfg["height"]):
         issues.append({"type": "resolution", "detail": f"{info['width']}x{info['height']}"})
-    if info["duration"] > 60:
+    if info["duration"] > cfg["max_total_sec"] + 2:
         issues.append({"type": "too_long", "detail": f"{info['duration']:.1f}s"})
     for s, e in blacks:
         issues.append({"type": "black", "start": s, "end": e})
@@ -32,7 +32,7 @@ def inspect(path, cfg):
     return {"duration": info["duration"], "lufs": integrated, "issues": issues}
 
 
-def fix_plan(issues, segs, cfg):
+def fix_plan(issues, segs, cfg, actions=None):
     """시각 기반 문제를 해당 세그먼트의 트림/속도 수정으로 바꾼다. 수정했으면 True."""
     changed = False
     for it in issues:
@@ -48,16 +48,22 @@ def fix_plan(issues, segs, cfg):
             if s.zoom_at is not None:
                 s.zoom_at = max(0.0, s.zoom_at - (length + 0.05) / s.speed)
             s.reasons.append(f"QC: 앞부분 {it['type']} {length:.2f}s 제거")
+            zone = "head"
         elif b >= s.out_len - 0.3 and s.out_len - length > 1.0:       # 뒷부분 문제
             s.src_end -= length + 0.05
             s.reasons.append(f"QC: 뒷부분 {it['type']} {length:.2f}s 제거")
+            zone = "tail"
         elif s.speed < cfg["max_speedup"] + 0.25:                     # 중간 → 빨리 넘기기
             s.speed = min(s.speed * 1.3, cfg["max_speedup"] + 0.25)
             if s.zoom_at is not None:
                 s.zoom_at /= 1.3
             s.reasons.append(f"QC: 중간 {it['type']} → 속도 {s.speed:.2f}x")
+            zone = "mid"
         else:
             continue
+        if actions is not None:
+            actions.append({"seg": idx, "name": s.name, "type": it["type"], "zone": zone,
+                            "start": it["start"], "end": it["end"]})
         changed = True
     return changed
 

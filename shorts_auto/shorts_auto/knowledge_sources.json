@@ -1,0 +1,17 @@
+{
+  "_설명": "자동 학습이 주기적으로 읽는 페이지 목록. 원하는 페이지를 params와 함께 추가할 수 있다.",
+  "pages": [
+    {"url": "https://youlean.co/youtube-loudness-normalization/", "params": ["target_lufs"]},
+    {"url": "https://meterplugs.com/blog/2019/09/18/youtube-changes-loudness-reference-to-14-lufs.html", "params": ["target_lufs"]},
+    {"url": "https://en.wikipedia.org/wiki/Audio_normalization", "params": ["target_lufs"]},
+    {"url": "https://www.clipspeed.ai/blog/youtube-shorts-size.html", "params": ["caption_margin_v", "caption_margin_h"]},
+    {"url": "https://blitzcutai.com/blog/best-caption-placement-short-form-video", "params": ["caption_margin_v"]},
+    {"url": "https://adaptlypost.com/en/blog/social-media-safe-zones-2026-complete-guide", "params": ["caption_margin_v", "caption_margin_h"]},
+    {"url": "https://postplanify.com/tools/youtube-shorts-safe-zone-checker", "params": ["caption_margin_v", "caption_margin_h"]},
+    {"url": "https://support.google.com/youtube/answer/15424877?hl=en", "params": ["max_total_sec"]},
+    {"url": "https://www.socialmediatoday.com/news/youtube-expands-3-minute-shorts-to-all-users/736967/", "params": ["max_total_sec"]},
+    {"url": "https://www.opus.pro/blog/youtube-shorts-hook-formulas", "params": ["hook_sec"]},
+    {"url": "https://www.go-viral.app/blog/hook-first-3-seconds/", "params": ["hook_sec"]},
+    {"url": "https://www.opus.pro/blog/ideal-youtube-shorts-length-format-retention", "params": ["hook_sec"]}
+  ]
+}

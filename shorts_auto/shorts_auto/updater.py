@@ -10,7 +10,7 @@ REPO = "k3748/-"
 BRANCH = "claude/practical-bardeen-dtxukf"
 SUBDIR = "shorts_auto"
 # 사용자 데이터는 절대 덮어쓰지 않는다
-KEEP = {"input", "output", "config.json"}
+KEEP = {"input", "output", "config.json", "data"}
 KEEP_ASSET_DIRS = ("assets/bgm", "assets/sfx")
 
 
