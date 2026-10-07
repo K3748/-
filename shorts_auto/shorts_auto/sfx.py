@@ -24,11 +24,8 @@ def find_sfx(assets: Path, kind: str) -> Path:
     cands = [p for p in _files(assets / "sfx") if kind in p.stem.lower()]
     if cands:
         return random.choice(cands)
-    gen = assets / "sfx" / "_generated" / f"{kind}.wav"
-    if not gen.exists():
-        gen.parent.mkdir(parents=True, exist_ok=True)
-        run(["ffmpeg", "-y", "-v", "error", "-f", "lavfi", "-i", SYNTH[kind], "-ac", "2", "-ar", "48000", str(gen)])
-    return gen
+    from .audio_gen import ensure_sfx
+    return ensure_sfx(kind, assets / "sfx" / "_generated_v2")
 
 
 def find_bgm(assets: Path, seed=None):

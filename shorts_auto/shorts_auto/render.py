@@ -92,6 +92,11 @@ def finalize(joined: Path, segs, cfg, assets: Path, work: Path, out: Path, seed=
     graph = ["[0:a]asplit=2[orig][key]"]
     mix = ["[orig]"]
     bgm = find_bgm(assets, seed)
+    generated = None
+    if not bgm and cfg.get("auto_bgm", True):
+        from .audio_gen import build_bgm
+        bgm = work / "bgm_generated.wav"
+        generated = build_bgm([(s.out_start, s.mood) for s in segs], total, bgm)
     if bgm:
         inputs += ["-stream_loop", "-1", "-i", str(bgm.resolve())]
         graph.append(f"[1:a]atrim=0:{total:.3f},asetpts=PTS-STARTPTS,aformat=channel_layouts=stereo,"
@@ -106,7 +111,13 @@ def finalize(joined: Path, segs, cfg, assets: Path, work: Path, out: Path, seed=
     for i, s in enumerate(segs):
         if i:
             cues.append((max(0, s.out_start - 0.12), "whoosh"))
-        if s.zoom_at is not None:
+        if cfg.get("auto_sfx", True):
+            from .audio_gen import REACTION_SFX
+            if s.ding:
+                cues.append((s.out_start + (s.trans_in if i else 0) + 0.1, "ding"))
+            if s.reaction_at is not None:
+                cues.append((s.out_start + s.reaction_at, REACTION_SFX[s.mood]))
+        elif s.zoom_at is not None:
             cues.append((s.out_start + s.zoom_at, "pop"))
     base = inputs.count("-i")
     for k, (t, kind) in enumerate(cues):
@@ -120,4 +131,4 @@ def finalize(joined: Path, segs, cfg, assets: Path, work: Path, out: Path, seed=
     run(["ffmpeg", "-y", "-v", "error", *inputs, "-filter_complex", ";".join(graph),
          "-map", "[vout]", "-map", "[aout]", *ENC, "-c:a", "aac", "-b:a", "192k",
          "-movflags", "+faststart", "-t", f"{total:.3f}", str(out.resolve())], cwd=work)
-    return {"bgm": bgm.name if bgm else None, "sfx_cues": cues}
+    return {"bgm": bgm.name if bgm else None, "bgm_generated": generated, "sfx_cues": cues}

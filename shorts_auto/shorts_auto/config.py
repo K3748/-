@@ -25,6 +25,8 @@ DEFAULTS = {
     "caption_margin_h": 140,        # 오른쪽 버튼 영역 회피
     "hook_sec": 3.0,                # 첫 반응이 나와야 하는 시간
     "lufs_pre_offset": 0.0,         # 1차 음량 보정치(학습)
+    "auto_bgm": True,               # bgm 폴더가 비면 분위기에 맞춰 생성
+    "auto_sfx": True,               # 분위기별 효과음 사용
     "bgm_volume": 0.35,
     "sfx_volume": 0.8,
     "target_lufs": -14.0,

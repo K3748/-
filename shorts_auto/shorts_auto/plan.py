@@ -1,6 +1,8 @@
 """분석 결과 → 편집 결정(EDL)."""
 from dataclasses import dataclass, field
 
+from pathlib import Path
+
 import numpy as np
 
 
@@ -18,6 +20,9 @@ class Segment:
     captions: list = field(default_factory=list)
     has_audio: bool = True
     motion_level: float = 0.0
+    mood: str = "calm"
+    mood_reason: str = ""
+    ding: bool = False
     trans_in: float = 0.0           # 이전 클립과 겹치는 전환 길이
     trans_type: str = "fade"
     out_start: float = 0.0          # 최종 타임라인 위치(렌더 후 채움)
@@ -56,6 +61,12 @@ def build_plan(analyses, captions, cfg):
         s = Segment(path=a.path, name=name, src_start=a.trim_start, src_end=a.trim_end,
                     has_audio=a.has_audio, motion_level=a.motion_level, captions=captions.get(a.path, []))
         s.reasons += a.notes
+        from .audio_gen import MOOD_KO, detect_mood, wants_ding
+        text = " ".join([Path(a.path).stem] + s.captions)
+        zone = [b for t, b in zip(a.times, a.brightness) if a.trim_start <= t <= a.trim_end] or [128]
+        s.mood, s.mood_reason = detect_mood(text, a.motion_level, float(np.mean(zone)))
+        s.ding = wants_ding(text)
+        s.reasons.append(f"분위기 {MOOD_KO[s.mood]} ({s.mood_reason})")
         s.reasons.append(f"트림 {a.trim_start:.2f}~{a.trim_end:.2f}s (원본 {a.duration:.2f}s)")
         s.framing, s.crop_cx, why = choose_framing(a, cfg)
         s.reasons.append(why)

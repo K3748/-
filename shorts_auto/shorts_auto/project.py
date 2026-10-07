@@ -116,6 +116,8 @@ class Project:
             if abs(s.src_end - a.trim_end) > 0.01:
                 self.change(s.name, "끝점", f"{a.trim_end:.2f}s", f"{s.src_end:.2f}s",
                             "클립/전체 길이 제한", "max_total_sec")
+            from .audio_gen import MOOD_KO
+            self.change(s.name, "분위기", "-", MOOD_KO[s.mood], s.mood_reason)
             if s.speed != 1.0:
                 self.change(s.name, "속도", "1.00x", f"{s.speed:.2f}x",
                             "클립이 길거나 움직임이 적어 템포를 높임")
@@ -160,11 +162,20 @@ class Project:
         self.change("전체", "자막", "0개", f"{n_caps}개",
                     f"하단 {self.cfg['caption_margin_v']}px, 좌우 {self.cfg['caption_margin_h']}px 안전 영역",
                     "caption_margin_v")
-        self.change("전체", "BGM", "없음", self.mix["bgm"] or "없음 (bgm 폴더 비어 있음)",
-                    "원본 소리가 클 때 자동으로 낮춤(더킹)")
-        n_w = sum(1 for _, k in self.mix["sfx_cues"] if k == "whoosh")
-        n_p = len(self.mix["sfx_cues"]) - n_w
-        self.change("전체", "효과음", "없음", f"전환 {n_w}개 · 반응 {n_p}개", "장면 전환과 반응 순간 강조")
+        from .audio_gen import MOOD_KO
+        names = {"whoosh": "슉(전환)", "pop": "뿅", "ding": "띵동(알림)", "boing": "띠용(놀람)",
+                 "sadtrombone": "빠밤~(슬픔)", "sparkle": "반짝(신남)"}
+        if self.mix.get("bgm_generated"):
+            flow = " → ".join(MOOD_KO[m] for _, m in self.mix["bgm_generated"])
+            self.change("전체", "BGM", "없음", f"자동 생성: {flow}",
+                        "bgm 폴더가 비어 있어 클립별 분위기에 맞춘 음악을 합성 (분위기 바뀌는 곳은 크로스페이드)")
+        else:
+            self.change("전체", "BGM", "없음", self.mix["bgm"] or "없음",
+                        "bgm 폴더의 음악 사용 · 원본 소리가 클 때 자동으로 낮춤(더킹)")
+        from collections import Counter
+        cnt = Counter(k for _, k in self.mix["sfx_cues"])
+        self.change("전체", "효과음", "없음", ", ".join(f"{names.get(k, k)} {n}" for k, n in cnt.items()) or "없음",
+                    "전환에는 슉, 반응 시점에는 분위기별 효과음, 알림·결제 장면에는 띵동")
         self.change("전체", "음량 목표", "원본", f"{self.cfg['target_lufs']} LUFS"
                     + (f" (1차 보정 {self.cfg['lufs_pre_offset']:+.1f}dB)" if self.cfg['lufs_pre_offset'] else ""),
                     "YouTube 음량 기준", "target_lufs")
