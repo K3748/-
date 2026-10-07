@@ -1,0 +1,6 @@
+output/*
+!output/.gitkeep
+input/*
+!input/.gitkeep
+__pycache__/
+assets/sfx/_generated/
