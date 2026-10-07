@@ -84,7 +84,7 @@ def caption_events(segs, total):
     return events
 
 
-def finalize(joined: Path, segs, cfg, assets: Path, work: Path, out: Path, seed=None):
+def finalize(joined: Path, segs, cfg, assets: Path, work: Path, out: Path, seed=None, log=print):
     total = probe(joined)["duration"]
     write_ass(caption_events(segs, total), cfg, work / "subs.ass")
 
@@ -92,11 +92,21 @@ def finalize(joined: Path, segs, cfg, assets: Path, work: Path, out: Path, seed=
     graph = ["[0:a]asplit=2[orig][key]"]
     mix = ["[orig]"]
     bgm = find_bgm(assets, seed)
-    generated = None
+    generated, sources = None, {}
+    lib = None
+    from . import freesound
+    if cfg.get("use_freesound", True) and freesound.get_key():
+        lib = freesound.Library(assets, log)
     if not bgm and cfg.get("auto_bgm", True):
         from .audio_gen import build_bgm
+        files = {}
+        if lib:
+            for m in dict.fromkeys(s.mood for s in segs):
+                path, info = lib.bgm(m)
+                if path:
+                    files[m], sources[f"bgm:{m}"] = path, info
         bgm = work / "bgm_generated.wav"
-        generated = build_bgm([(s.out_start, s.mood) for s in segs], total, bgm)
+        generated = build_bgm([(s.out_start, s.mood) for s in segs], total, bgm, files=files)
     if bgm:
         inputs += ["-stream_loop", "-1", "-i", str(bgm.resolve())]
         graph.append(f"[1:a]atrim=0:{total:.3f},asetpts=PTS-STARTPTS,aformat=channel_layouts=stereo,"
@@ -121,7 +131,10 @@ def finalize(joined: Path, segs, cfg, assets: Path, work: Path, out: Path, seed=
             cues.append((s.out_start + s.zoom_at, "pop"))
     base = inputs.count("-i")
     for k, (t, kind) in enumerate(cues):
-        inputs += ["-i", str(find_sfx(assets, kind).resolve())]
+        path = find_sfx(assets, kind, lib)
+        if lib and f"sfx:{kind}" in lib.credits and path.name == lib.credits[f"sfx:{kind}"]["file"]:
+            sources[f"sfx:{kind}"] = lib.credits[f"sfx:{kind}"]
+        inputs += ["-i", str(path.resolve())]
         ms = int(t * 1000)
         graph.append(f"[{base + k}:a]aformat=channel_layouts=stereo,adelay={ms}|{ms},volume={cfg['sfx_volume']}[s{k}]")
         mix.append(f"[s{k}]")
@@ -131,4 +144,5 @@ def finalize(joined: Path, segs, cfg, assets: Path, work: Path, out: Path, seed=
     run(["ffmpeg", "-y", "-v", "error", *inputs, "-filter_complex", ";".join(graph),
          "-map", "[vout]", "-map", "[aout]", *ENC, "-c:a", "aac", "-b:a", "192k",
          "-movflags", "+faststart", "-t", f"{total:.3f}", str(out.resolve())], cwd=work)
-    return {"bgm": bgm.name if bgm else None, "bgm_generated": generated, "sfx_cues": cues}
+    return {"bgm": bgm.name if bgm else None, "bgm_generated": generated, "sfx_cues": cues,
+            "sources": sources}

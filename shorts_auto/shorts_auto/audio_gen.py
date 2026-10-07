@@ -163,8 +163,21 @@ def write_wav(path, mono_or_stereo):
         w.writeframes(pcm.tobytes())
 
 
-def build_bgm(sections, total, out: Path, fade=0.5):
-    """sections: [(start, mood)] (시간순). 분위기가 바뀌는 곳은 크로스페이드."""
+def decode_audio(path, dur):
+    """음원 파일을 dur초 길이 모노 배열로 (짧으면 반복)."""
+    import subprocess
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-stream_loop", "-1", "-i", str(path), "-t", f"{dur:.3f}",
+                          "-ac", "1", "-ar", str(SR), "-f", "s16le", "-"], capture_output=True).stdout
+    x = np.frombuffer(raw, dtype="<i2").astype(np.float64) / 32768
+    if len(x) < int(dur * SR):
+        x = np.pad(x, (0, int(dur * SR) - len(x)))
+    return x[: int(dur * SR)]
+
+
+def build_bgm(sections, total, out: Path, fade=0.5, files=None):
+    """sections: [(start, mood)] (시간순). 분위기가 바뀌는 곳은 크로스페이드.
+    files: {mood: 음원 경로} 가 있으면 그 분위기 구간은 받아온 음원을 사용."""
+    files = files or {}
     merged = []
     for st, m in sections:
         if not merged or merged[-1][1] != m:
@@ -173,7 +186,7 @@ def build_bgm(sections, total, out: Path, fade=0.5):
     for i, (st, m) in enumerate(merged):
         en = merged[i + 1][0] if i + 1 < len(merged) else total
         a, b = max(0.0, st - fade / 2), min(total, en + fade / 2)
-        seg = _normalize(render_mood(m, b - a))
+        seg = _normalize(decode_audio(files[m], b - a) if files.get(m) else render_mood(m, b - a))
         n_f = int(fade * SR)
         env = np.ones(len(seg))
         if i > 0:

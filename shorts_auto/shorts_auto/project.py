@@ -157,7 +157,7 @@ class Project:
 
     def step_finalize(self):
         self.mix = finalize(self.work / "joined.mp4", self.segs, self.cfg, self.assets, self.work,
-                            self.work / "final.mp4", self.seed)
+                            self.work / "final.mp4", self.seed, self.log)
         n_caps = sum(len(s.captions) for s in self.segs)
         self.change("전체", "자막", "0개", f"{n_caps}개",
                     f"하단 {self.cfg['caption_margin_v']}px, 좌우 {self.cfg['caption_margin_h']}px 안전 영역",
@@ -167,8 +167,16 @@ class Project:
                  "sadtrombone": "빠밤~(슬픔)", "sparkle": "반짝(신남)"}
         if self.mix.get("bgm_generated"):
             flow = " → ".join(MOOD_KO[m] for _, m in self.mix["bgm_generated"])
-            self.change("전체", "BGM", "없음", f"자동 생성: {flow}",
-                        "bgm 폴더가 비어 있어 클립별 분위기에 맞춘 음악을 합성 (분위기 바뀌는 곳은 크로스페이드)")
+            fs = {k: v for k, v in self.mix.get("sources", {}).items() if k.startswith("bgm:")}
+            how = "Freesound CC0 음원" if fs else "자동 생성"
+            self.change("전체", "BGM", "없음", f"{how}: {flow}",
+                        "bgm 폴더가 비어 있어 클립별 분위기에 맞춘 음악 사용 (분위기 바뀌는 곳은 크로스페이드)"
+                        + "".join(f"\n - {MOOD_KO[k[4:]]}: '{v['name']}' by {v['username']} ({v['url']})"
+                                  for k, v in fs.items()))
+        fsx = {k: v for k, v in self.mix.get("sources", {}).items() if k.startswith("sfx:")}
+        if fsx:
+            self.change("전체", "받아온 효과음", "-", f"{len(fsx)}종 (Freesound CC0)",
+                        "".join(f"\n - {k[4:]}: '{v['name']}' by {v['username']} ({v['url']})" for k, v in fsx.items()))
         else:
             self.change("전체", "BGM", "없음", self.mix["bgm"] or "없음",
                         "bgm 폴더의 음악 사용 · 원본 소리가 클 때 자동으로 낮춤(더킹)")

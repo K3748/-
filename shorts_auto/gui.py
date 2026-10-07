@@ -979,6 +979,21 @@ class App(tk.Tk):
         ttk.Label(frm, text="BGM은 bgm 폴더, 효과음은 sfx 폴더 (파일명에 whoosh=전환, pop=반응)",
                   style="Muted.TLabel").grid(row=r, column=0, columnspan=4, sticky="w")
         r += 1
+        from shorts_auto import freesound
+        ttk.Label(frm, text="Freesound API 키", style="Head.TLabel").grid(row=r, column=0, sticky="w", pady=(12, 2))
+        ttk.Label(frm, text="있으면 분위기에 맞는 CC0 음원을 받아 사용 (freesound.org/apiv2/apply)",
+                  style="Muted.TLabel").grid(row=r, column=1, columnspan=3, sticky="w", pady=(12, 2))
+        r += 1
+        var_key = tk.StringVar(value=freesound.get_key())
+        ttk.Entry(frm, textvariable=var_key, width=40, show="•").grid(row=r, column=0, columnspan=2, sticky="ew")
+
+        def test_key():
+            ok, msg = freesound.test_key(var_key.get().strip())
+            if ok:
+                freesound.set_key(var_key.get())
+            (messagebox.showinfo if ok else messagebox.showerror)("Freesound", msg + (" · 키 저장됨" if ok else ""), parent=win)
+        ttk.Button(frm, text="연결 테스트·저장", style="Small.TButton", command=test_key).grid(row=r, column=2, columnspan=2)
+        r += 1
         ttk.Label(frm, text="편집 수치", style="Head.TLabel").grid(row=r, column=0, sticky="w", pady=(12, 2))
         ttk.Label(frm, text="음량·자막 위치·길이 등은 '학습 지식'이 자동 관리합니다",
                   style="Muted.TLabel").grid(row=r, column=1, columnspan=3, sticky="w", pady=(12, 2))

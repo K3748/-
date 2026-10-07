@@ -19,11 +19,15 @@ def _files(folder: Path):
     return sorted(p for p in folder.glob("*") if p.suffix.lower() in AUDIO_EXT) if folder.exists() else []
 
 
-def find_sfx(assets: Path, kind: str) -> Path:
+def find_sfx(assets: Path, kind: str, lib=None) -> Path:
     """assets/sfx 에서 파일명에 kind 가 들어간 효과음을 찾는다."""
     cands = [p for p in _files(assets / "sfx") if kind in p.stem.lower()]
     if cands:
         return random.choice(cands)
+    if lib is not None:
+        path, _ = lib.sfx(kind)
+        if path:
+            return path
     from .audio_gen import ensure_sfx
     return ensure_sfx(kind, assets / "sfx" / "_generated_v2")
 

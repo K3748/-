@@ -27,6 +27,7 @@ DEFAULTS = {
     "lufs_pre_offset": 0.0,         # 1차 음량 보정치(학습)
     "auto_bgm": True,               # bgm 폴더가 비면 분위기에 맞춰 생성
     "auto_sfx": True,               # 분위기별 효과음 사용
+    "use_freesound": True,          # API 키가 있으면 Freesound에서 CC0 음원을 받아 사용
     "bgm_volume": 0.35,
     "sfx_volume": 0.8,
     "target_lufs": -14.0,
